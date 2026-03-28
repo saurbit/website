@@ -202,8 +202,8 @@ Return either a plain access token string, or a result object:
 ```ts
 {
   accessToken: "eyJhbGciOi...",
+  scope?: ["read:data"],          // recommended — returned to the client
   refreshToken?: "rt_abc123",     // optional
-  scope?: ["read:data"],          // optional — returned to the client
   idToken?: "eyJhbGciOi...",      // optional — for OpenID Connect
 }
 ```
@@ -239,7 +239,7 @@ Return the same shape as `generateAccessToken`.
 ): this
 ```
 
-Sets the token verification function used by the strategy middleware to validate access tokens on protected routes. This is invoked when you use `evaluateStrategy()` to protect your endpoints.
+Sets the token verification function used by the strategy middleware to validate access tokens on protected routes.
 
 ---
 
@@ -464,21 +464,6 @@ app.post(flow.getAuthorizationEndpoint(), async (req) => {
 });
 ```
 
-### `toOpenAPIPathItem(scopes?)`
-
-```ts
-toOpenAPIPathItem(scopes?: string[]): Record<string, string[]>
-```
-
-Returns an OpenAPI security requirement object for a specific path. Use this to annotate individual endpoints with the required scopes.
-
-```ts
-// Returns e.g. { "myOAuth2": ["content:read"] }
-const security = flow.toOpenAPIPathItem(["content:read"]);
-```
-
-This is meant to be used inside an OpenAPI path item's `security` array, alongside `toOpenAPISecurityScheme()` which defines the scheme itself.
-
 ### `verifyToken(request)`
 
 ```ts
@@ -509,6 +494,21 @@ app.get("/api/protected", async (req) => {
   return new Response(JSON.stringify({ data: "secret" }));
 });
 ```
+
+### `toOpenAPIPathItem(scopes?)`
+
+```ts
+toOpenAPIPathItem(scopes?: string[]): Record<string, string[]>
+```
+
+Returns an OpenAPI security requirement object for a specific path. Use this to annotate individual endpoints with the required scopes.
+
+```ts
+// Returns e.g. { "myOAuth2": ["content:read"] }
+const security = flow.toOpenAPIPathItem(["content:read"]);
+```
+
+This is meant to be used inside an OpenAPI path item's `security` array, alongside `toOpenAPISecurityScheme()` which defines the scheme itself.
 
 ### `toOpenAPISecurityScheme()`
 
@@ -543,6 +543,7 @@ const flow = new AuthorizationCodeFlowBuilder<LoginFormData>({
   .setAccessTokenLifetime(3600)
   .addClientAuthenticationMethod("client_secret_basic")
   .addClientAuthenticationMethod("client_secret_post")
+  .addClientAuthenticationMethod("none")
 
   // Authorization endpoint: validate the client
   .getClientForAuthentication(async ({ clientId, redirectUri }) => {
@@ -587,6 +588,7 @@ const flow = new AuthorizationCodeFlowBuilder<LoginFormData>({
         client.metadata = { 
             userId: stored.userId,
             scope: stored.scope,
+            redirectUri: stored.redirectUri,
         };
       }
       return client;
@@ -621,7 +623,18 @@ const flow = new AuthorizationCodeFlowBuilder<LoginFormData>({
   .verifyToken(async (token) => {
     const payload = await verifyJwt(token);
     if (!payload) return { isValid: false };
-    return { isValid: true, credentials: { user: payload.sub, scope: payload.scope, aud: payload.aud } };
+    const user = await db.findUserById(payload.sub);
+    if (!user) return { isValid: false };
+    const client = await db.findClientById(payload.aud);
+    if (!client) return { isValid: false };
+    return { 
+        isValid: true, 
+        credentials: { 
+            client: client,
+            user: user, 
+            scope: payload.scope,
+        } 
+    };
   })
 
   .build();
