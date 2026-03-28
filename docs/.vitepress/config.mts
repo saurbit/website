@@ -4,6 +4,9 @@ import { defineConfig } from 'vitepress'
 export default defineConfig({
   title: "Saurbit",
   description: "Toolkit of modular, reusable packages",
+  head: [
+    ['link', { rel: 'icon', href: '/favicon.ico' }]
+  ],
   markdown: {
     theme: {
       light: "catppuccin-latte",
@@ -13,12 +16,15 @@ export default defineConfig({
   themeConfig: {
     // https://vitepress.dev/reference/default-theme-config
     nav: [
-      { text: 'Home', link: '/' },
+      { text: 'Docs', link: '/concepts/main' },
       { text: 'Examples', link: '/markdown-examples' }
     ],
 
     sidebar: [
-      { text: 'Concepts', link: '/concepts/main' },
+      { 
+        text: 'Concepts',
+        items: [{ text: 'What is Saurbit?', link: '/concepts/main' }]
+      },
       {
         text: 'Packages',
         items: [
@@ -27,6 +33,10 @@ export default defineConfig({
             collapsed: true,
             items: [
               { text: '@saurbit/oauth2', link: '/packages/oauth2/' },
+              { text: 'Authorization Code', link: '/packages/oauth2/authorization-code' },
+              { text: 'Client Credentials', link: '/packages/oauth2/client-credentials' },
+              { text: 'Device Authorization', link: '/packages/oauth2/device-authorization' },
+              { text: 'OIDC Support', link: '/packages/oauth2/oidc-support' },
             ] 
           },
         ],
