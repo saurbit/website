@@ -601,6 +601,7 @@ const flow = new AuthorizationCodeFlowBuilder<LoginFormData>({
       client.metadata = { 
           userId: token.userId,
           scope: token.scope,
+          redirectUri: token.redirectUri,
       };
     }
     return client;
@@ -608,15 +609,25 @@ const flow = new AuthorizationCodeFlowBuilder<LoginFormData>({
 
   // Token endpoint: issue access token
   .generateAccessToken(async (context) => ({
-    accessToken: await signJwt({ sub: context.client.metadata.userId, scope: context.client.metadata.scope, aud: context.client.id }),
+    accessToken: await signJwt({ 
+      sub: context.client.metadata.userId, 
+      scope: context.client.metadata.scope, 
+      aud: context.client.id,
+      exp: Math.floor(Date.now() / 1000) + context.accessTokenLifetime,
+    }),
     refreshToken: crypto.randomUUID(),
     scope: context.client.metadata.scope,
   }))
 
   // Token endpoint: issue new access token from refresh token
   .generateAccessTokenFromRefreshToken(async (context) => ({
-    accessToken: await signJwt({ sub: context.client.metadata.userId, scope: context.client.metadata.scope, aud: context.client.id }),
-    scope: context.scope,
+    accessToken: await signJwt({ 
+      sub: context.client.metadata.userId, 
+      scope: context.client.metadata.scope, 
+      aud: context.client.id,
+      exp: Math.floor(Date.now() / 1000) + context.accessTokenLifetime,
+    }),
+    scope: context.client.metadata.scope,
   }))
 
   // Strategy middleware: verify tokens on protected routes

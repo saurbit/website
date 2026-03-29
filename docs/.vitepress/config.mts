@@ -16,28 +16,32 @@ export default defineConfig({
   themeConfig: {
     // https://vitepress.dev/reference/default-theme-config
     nav: [
-      { text: 'Docs', link: '/concepts/main' },
+      { text: 'Docs', link: '/introduction' },
       { text: 'Examples', link: '/markdown-examples' }
     ],
 
     sidebar: [
-      { 
-        text: 'Concepts',
-        items: [{ text: 'What is Saurbit?', link: '/concepts/main' }]
+      {
+        text: 'Introduction',
+        items: [{ text: 'What is Saurbit?', link: '/introduction' }]
       },
       {
         text: 'Packages',
         items: [
-          { 
-            text: 'OAuth2', 
+          {
+            text: 'OAuth2',
             collapsed: true,
             items: [
-              { text: '@saurbit/oauth2', link: '/packages/oauth2/' },
-              { text: 'Authorization Code', link: '/packages/oauth2/authorization-code' },
-              { text: 'Client Credentials', link: '/packages/oauth2/client-credentials' },
-              { text: 'Device Authorization', link: '/packages/oauth2/device-authorization' },
-              { text: 'OIDC Support', link: '/packages/oauth2/oidc-support' },
-            ] 
+              {
+                text: '@saurbit/oauth2', link: '/packages/oauth2/', items: [
+                  { text: 'Authorization Code', link: '/packages/oauth2/authorization-code' },
+                  { text: 'Client Credentials', link: '/packages/oauth2/client-credentials' },
+                  { text: 'Device Authorization', link: '/packages/oauth2/device-authorization' },
+                  { text: 'OIDC Support', link: '/packages/oauth2/oidc-support' },
+                ]
+              },
+
+            ]
           },
         ],
       },
