@@ -34,6 +34,7 @@ export default defineConfig({
             items: [
               {
                 text: '@saurbit/oauth2', link: '/packages/oauth2/', items: [
+                  { text: 'Builders', link: '/packages/oauth2/builders' },
                   { text: 'Authorization Code', link: '/packages/oauth2/authorization-code' },
                   { text: 'Client Credentials', link: '/packages/oauth2/client-credentials' },
                   { text: 'Device Authorization', link: '/packages/oauth2/device-authorization' },

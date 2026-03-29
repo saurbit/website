@@ -107,111 +107,23 @@ Unlike the Authorization Code flow, the Client Credentials flow does **not** sup
 
 #### `verifyToken(handler)`
 
-```ts
-.verifyToken(
-  handler: (token: string) => Promise<StrategyResult> | StrategyResult
-): this
-```
-
-Sets the token verification function used by the strategy middleware to validate access tokens on protected routes.
+See [Common Builder & Flow API — `verifyToken`](./builders#builder-verify-token).
 
 ---
 
-### Common Configuration {#common-configuration}
+### Common Configuration
 
-These methods are inherited from the base `OAuth2FlowBuilder` and apply to all flow types.
-
-#### `setTokenEndpoint(url)`
-
-```ts
-.setTokenEndpoint(url: string): this
-```
-
-Sets the token endpoint URL (e.g. `/oauth/token`). Used in OpenAPI documentation.
-
-#### `setAccessTokenLifetime(lifetime)`
-
-```ts
-.setAccessTokenLifetime(lifetime: number): this
-```
-
-Sets the default access token lifetime in seconds. Defaults to `3600` (1 hour).
-
-#### `setSecuritySchemeName(name)`
-
-```ts
-.setSecuritySchemeName(name: string): this
-```
-
-Sets the key used to identify this security scheme in OpenAPI documentation.
-
-#### `setDescription(description)`
-
-```ts
-.setDescription(description: string): this
-```
-
-Sets a human-readable description for the OpenAPI security scheme.
-
-#### `setScopes(scopes)`
-
-```ts
-.setScopes(scopes: Record<string, string>): this
-```
-
-Sets the scopes supported by this flow. The keys are scope names, values are human-readable descriptions.
-
-```ts
-.setScopes({
-  "content:read": "Read content",
-  "content:write": "Write content",
-  "admin": "Full admin access",
-})
-```
-
-#### `setTokenType(tokenType)`
-
-```ts
-.setTokenType(tokenType: TokenType): this
-```
-
-Sets the token type implementation (e.g. `BearerTokenType`, `DPoPTokenType`). Defaults to Bearer.
+See [Common Builder & Flow API — Common Configuration](./builders#common-configuration) for the full list of shared configuration methods (`setTokenEndpoint`, `setAccessTokenLifetime`, `setSecuritySchemeName`, `setDescription`, `setScopes`, `setTokenType`).
 
 ---
 
 ### Client Authentication Methods
 
-Configure how clients authenticate at the token endpoint. Since this is a machine-to-machine flow, clients **must** authenticate with a secret — the `none` method is intentionally disabled.
-
-#### `addClientAuthenticationMethod(method)`
-
-```ts
-.addClientAuthenticationMethod(
-  method: "client_secret_basic" | "client_secret_post" | ClientAuthMethod
-): this
-```
-
-Registers a client authentication method. You can pass a well-known string or a custom `ClientAuthMethod` instance. Call multiple times to support several methods.
+See [Common Builder & Flow API — Client Authentication Methods](./builders#client-authentication-methods) for available methods.
 
 ::: warning
 Passing `"none"` has no effect on this builder. Client credentials require the client to authenticate with a secret.
 :::
-
-#### `clientSecretBasicAuthenticationMethod()`
-
-Shortcut for registering HTTP Basic authentication (`Authorization: Basic <base64(client_id:client_secret)>`).
-
-#### `clientSecretPostAuthenticationMethod()`
-
-Shortcut for registering `client_id` and `client_secret` as POST body parameters.
-
-#### `removeClientAuthenticationMethod(method)`
-
-```ts
-.removeClientAuthenticationMethod(method: TokenEndpointAuthMethod): this
-```
-
-Removes a previously registered authentication method.
 
 ---
 
@@ -249,53 +161,15 @@ Returns:
 
 ### `getTokenEndpoint()`
 
-```ts
-getTokenEndpoint(): string
-```
-
-Returns the configured token endpoint URL. Useful for registering routes dynamically.
-
-```ts
-app.post(flow.getTokenEndpoint(), async (req) => {
-  const result = await flow.token(req);
-  // ...
-});
-```
+See [Common Builder & Flow API — `getTokenEndpoint`](./builders#gettokenendpoint).
 
 ### `verifyToken(request)`
 
-```ts
-async verifyToken(request: Request): Promise<StrategyResult>
-```
-
-Verifies that the incoming request contains a valid access token. Extracts the token from the `Authorization` header, validates it using the configured token type (e.g. Bearer) and the `verifyToken` handler you set on the builder.
-
-Use this in your protected route handlers to gate access:
-
-```ts
-app.get("/api/protected", async (req) => {
-  const result = await flow.verifyToken(req);
-  if (!result.success) {
-    return new Response("Unauthorized", { status: 401 });
-  }
-  return new Response(JSON.stringify({ data: "secret" }));
-});
-```
+See [Common Builder & Flow API — `verifyToken`](./builders#flow-verify-token).
 
 ### `toOpenAPIPathItem(scopes?)`
 
-```ts
-toOpenAPIPathItem(scopes?: string[]): Record<string, string[]>
-```
-
-Returns an OpenAPI security requirement object for a specific path. Use this to annotate individual endpoints with the required scopes.
-
-```ts
-// Returns e.g. { "myOAuth2": ["read:data"] }
-const security = flow.toOpenAPIPathItem(["read:data"]);
-```
-
-This is meant to be used inside an OpenAPI path item's `security` array, alongside `toOpenAPISecurityScheme()` which defines the scheme itself.
+See [Common Builder & Flow API — `toOpenAPIPathItem`](./builders#toopenapipathitem-scopes).
 
 ### `toOpenAPISecurityScheme()`
 
