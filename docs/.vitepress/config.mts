@@ -15,9 +15,10 @@ export default defineConfig({
   },
   themeConfig: {
     // https://vitepress.dev/reference/default-theme-config
+    logo: '/images/saurbit-sit-pfp.png',
     nav: [
       { text: 'Docs', link: '/introduction' },
-      { text: 'Examples', link: '/markdown-examples' }
+      { text: 'Examples', link: '/examples/' }
     ],
 
     sidebar: [
@@ -27,6 +28,7 @@ export default defineConfig({
       },
       {
         text: 'Packages',
+        link: '/packages/',
         items: [
           {
             text: 'OAuth2',
@@ -48,9 +50,9 @@ export default defineConfig({
       },
       {
         text: 'Examples',
+        link: '/examples/',
         items: [
-          { text: 'Markdown Examples', link: '/markdown-examples' },
-          { text: 'Runtime API Examples', link: '/api-examples' }
+          { text: 'OAuth2 with Hono', link: '/examples/hono-oauth2/' },
         ]
       },
     ],
