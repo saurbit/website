@@ -17,6 +17,9 @@ export default defineConfig({
   themeConfig: {
     // https://vitepress.dev/reference/default-theme-config
     logo: '/images/saurbit-sit-pfp.png',
+    search: {
+      provider: 'local'
+    },
     nav: [
       { text: 'Docs', link: '/introduction' },
       { text: 'Examples', link: '/examples/' }
