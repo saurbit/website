@@ -6,7 +6,7 @@ export default defineConfig({
   title: "Saurbit",
   description: "Toolkit of modular, reusable packages",
   head: [
-    ['link', { rel: 'icon', href: '/favicon.ico' }]
+    ['link', { rel: 'icon', href: '/website/favicon.ico' }]
   ],
   markdown: {
     theme: {
