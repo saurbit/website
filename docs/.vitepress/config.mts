@@ -2,6 +2,7 @@ import { defineConfig } from 'vitepress'
 
 // https://vitepress.dev/reference/site-config
 export default defineConfig({
+  base: '/website/',
   title: "Saurbit",
   description: "Toolkit of modular, reusable packages",
   head: [
