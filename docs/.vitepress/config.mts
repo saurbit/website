@@ -46,6 +46,7 @@ export default defineConfig({
                   { text: 'Device Authorization', link: '/packages/oauth2/device-authorization' },
                   { text: 'OIDC Support', link: '/packages/oauth2/oidc-support' },
                   { text: 'Client Authentication Methods', link: '/packages/oauth2/client-auth-methods' },
+                  { text: 'Token Types', link: '/packages/oauth2/token-types' },
                 ]
               },
 
