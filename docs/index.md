@@ -15,9 +15,12 @@ hero:
       link: /examples/
 
 features:
-  - title: Modular & Reusable
+  - icon: 🧩
+    title: Modular & Reusable
     details: Each package is built to be reusable across different projects and environments.
-  - title: Cross-Platform
+
+  - icon: 🌐
+    title: Cross-Platform
     details: Saurbit packages work seamlessly across Node.js, Bun, Deno, and Cloudflare Workers.
 ---
 
