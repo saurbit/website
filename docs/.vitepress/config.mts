@@ -57,7 +57,9 @@ export default defineConfig({
       {
         text: 'Examples',
         link: '/examples/',
+        collapsed: false,
         items: [
+          { text: 'OAuth2 with ElysiaJS', link: '/examples/oauth2-with-elysiajs' },
           { text: 'OAuth2 with Hono', link: '/examples/hono-oauth2/' },
         ]
       },
