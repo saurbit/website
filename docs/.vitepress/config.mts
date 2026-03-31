@@ -49,7 +49,14 @@ export default defineConfig({
                   { text: 'Token Types', link: '/packages/oauth2/token-types' },
                 ]
               },
-
+              {
+                text: '@saurbit/oauth2-jwt', link: '/packages/oauth2-jwt/', items: [
+                  { text: 'JoseJwksAuthority', link: '/packages/oauth2-jwt/jose-jwks-authority' },
+                  { text: 'JWKS Rotator', link: '/packages/oauth2-jwt/jwks-rotator' },
+                  { text: 'In-Memory Key Store', link: '/packages/oauth2-jwt/in-memory-key-store' },
+                  { text: 'JWT Methods', link: '/packages/oauth2-jwt/methods' },
+                ]
+              }
             ]
           },
         ],
