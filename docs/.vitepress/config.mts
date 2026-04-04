@@ -39,7 +39,8 @@ export default defineConfig({
             collapsed: true,
             items: [
               {
-                text: '@saurbit/oauth2', link: '/packages/oauth2/', items: [
+                text: '@saurbit/oauth2', collapsed: true, items: [
+                  { text: 'Introduction', docFooterText: '@saurbit/oauth2', link: '/packages/oauth2/' },
                   { text: 'Builders', link: '/packages/oauth2/builders' },
                   { text: 'Authorization Code', link: '/packages/oauth2/authorization-code' },
                   { text: 'Client Credentials', link: '/packages/oauth2/client-credentials' },
@@ -50,7 +51,8 @@ export default defineConfig({
                 ]
               },
               {
-                text: '@saurbit/oauth2-jwt', link: '/packages/oauth2-jwt/', items: [
+                text: '@saurbit/oauth2-jwt', collapsed: true, items: [
+                  { text: 'Introduction', docFooterText: '@saurbit/oauth2-jwt', link: '/packages/oauth2-jwt/' },
                   { text: 'JoseJwksAuthority', link: '/packages/oauth2-jwt/jose-jwks-authority' },
                   { text: 'JWKS Rotator', link: '/packages/oauth2-jwt/jwks-rotator' },
                   { text: 'In-Memory Key Store', link: '/packages/oauth2-jwt/in-memory-key-store' },
