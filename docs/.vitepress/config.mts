@@ -69,7 +69,9 @@ export default defineConfig({
         collapsed: false,
         items: [
           { text: 'OAuth2 with ElysiaJS', link: '/examples/oauth2-with-elysiajs' },
-          { text: 'OAuth2 with Hono', link: '/examples/hono-oauth2/' },
+          { text: 'OAuth2 with Hono', link: '/examples/hono-oauth2/', items: [
+            { text: 'OIDC Example', link: '/examples/hono-oauth2/oidc-example' },
+          ] },
         ]
       },
     ],
