@@ -94,6 +94,7 @@ const codeStorage: Record<
     userId: string;
     expiresAt: number;
     codeChallenge?: string;
+    nonce?: string;
   }
 > = {};
 
@@ -180,6 +181,7 @@ const flow = HonoOIDCAuthorizationCodeFlowBuilder.create({
       userId: `${user.id}`,
       expiresAt: Date.now() + 60000,
       codeChallenge: grantContext.codeChallenge,
+      nonce: grantContext.nonce,
     };
     return {
       type: "code",
@@ -245,6 +247,7 @@ const flow = HonoOIDCAuthorizationCodeFlowBuilder.create({
           username: USER.username,
           userEmail: USER.email,
           userFullName: USER.fullName,
+          nonce: codeData.nonce,
         },
       };
     }
@@ -277,6 +280,9 @@ const flow = HonoOIDCAuthorizationCodeFlowBuilder.create({
         : undefined,
       email: accessScope.includes("email")
         ? `${grantContext.client.metadata?.userEmail}`
+        : undefined,
+      nonce: grantContext.client.metadata?.nonce
+        ? `${grantContext.client.metadata?.nonce}`
         : undefined,
       ...registeredClaims,
     });

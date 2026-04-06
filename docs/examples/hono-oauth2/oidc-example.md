@@ -133,6 +133,7 @@ const codeStorage: Record<
     userId: string;
     expiresAt: number;
     codeChallenge?: string;
+    nonce?: string;
   }
 > = {};
 ```
@@ -258,6 +259,7 @@ Once the user is authenticated, generate a short-lived authorization code. Store
       userId: `${user.id}`,
       expiresAt: Date.now() + 60000,
       codeChallenge: grantContext.codeChallenge,
+      nonce: grantContext.nonce,
     };
     return {
       type: "code",
@@ -314,6 +316,7 @@ Once the user is authenticated, generate a short-lived authorization code. Store
           username: USER.username,
           userEmail: USER.email,
           userFullName: USER.fullName,
+          nonce: codeData.nonce,
         },
       };
     }
@@ -356,6 +359,9 @@ The `metadata` field on the returned client object is a freeform record. Use it 
         : undefined,
       email: accessScope.includes("email")
         ? `${grantContext.client.metadata?.userEmail}`
+        : undefined,
+      nonce: grantContext.client.metadata?.nonce
+        ? `${grantContext.client.metadata?.nonce}`
         : undefined,
       ...registeredClaims,
     });
