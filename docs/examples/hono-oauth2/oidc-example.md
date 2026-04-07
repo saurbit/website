@@ -109,7 +109,6 @@ const CLIENT = {
   grants: ["authorization_code"],
   redirectUris: [
     "http://localhost:3000/scalar",
-    "http://localhost:5054/",
   ],
   scopes: ["openid", "profile", "email", "content:read", "content:write"],
 };
@@ -119,6 +118,7 @@ const USER = {
   fullName: "John Doe",
   email: "user@example.com",
   username: "user",
+  password: "crossterm",
 };
 ```
 
@@ -174,7 +174,7 @@ const flow = HonoOIDCAuthorizationCodeFlowBuilder.create({
   })
   .setDescription("Example OpenID Connect Authorization Code Flow")
   .setDiscoveryUrl(`${ISSUER}${DISCOVERY_ENDPOINT_PATH}`)
-  .setJwksEndpoint("/jwks")
+  .setJwksEndpoint("/.well-known/jwks.json")
   .setAuthorizationEndpoint("/authorize")
   .setTokenEndpoint("/token")
   .setUserInfoEndpoint("/userinfo")
@@ -229,7 +229,7 @@ See [Client Authentication Methods](/packages/oauth2/client-auth-methods) for al
 
 ```ts
   .getUserForAuthentication((_ctxt, parsedData) => {
-    if (parsedData.username === "user" && parsedData.password === "crossterm") {
+    if (parsedData.username === USER.username && parsedData.password === USER.password) {
       return {
         type: "authenticated",
         user: {
