@@ -348,7 +348,7 @@ The `metadata` field on the returned client object is a freeform record. Use it 
     };
 
     const { token: accessToken } = await jwksAuthority.sign({
-      scope: accessScope,
+      scope: accessScope.join(" "),
       ...registeredClaims,
     });
 
@@ -385,7 +385,7 @@ The `metadata` field on the returned client object is a freeform record. Use it 
       if (
         payload &&
         payload.sub === USER.id &&
-        Array.isArray(payload.scope)
+        typeof payload.scope === "string"
       ) {
         return {
           isValid: true,
@@ -396,7 +396,7 @@ The `metadata` field on the returned client object is a freeform record. Use it 
               email: USER.email,
               username: USER.username,
             },
-            scope: payload.scope,
+            scope: payload.scope.split(" "),
           },
         };
       }

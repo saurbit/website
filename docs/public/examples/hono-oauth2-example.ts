@@ -269,7 +269,7 @@ const flow = HonoOIDCAuthorizationCodeFlowBuilder.create({
     };
 
     const { token: accessToken } = await jwksAuthority.sign({
-      scope: accessScope,
+      scope: accessScope.join(" "),
       ...registeredClaims,
     });
 
@@ -302,7 +302,7 @@ const flow = HonoOIDCAuthorizationCodeFlowBuilder.create({
       if (
         accessTokenJwtPayload &&
         accessTokenJwtPayload.sub === USER.id &&
-        Array.isArray(accessTokenJwtPayload.scope)
+        typeof accessTokenJwtPayload.scope === "string"
       ) {
         const user: UserCredentials = {
           id: USER.id,
@@ -314,7 +314,7 @@ const flow = HonoOIDCAuthorizationCodeFlowBuilder.create({
           isValid: true,
           credentials: {
             user: { ...user },
-            scope: accessTokenJwtPayload.scope,
+            scope: accessTokenJwtPayload.scope.split(" "),
           },
         };
       }
