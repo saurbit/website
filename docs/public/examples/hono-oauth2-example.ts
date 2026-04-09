@@ -56,10 +56,10 @@ const DISCOVERY_ENDPOINT_PATH = "/.well-known/openid-configuration";
 const jwksStore = createInMemoryKeyStore();
 
 // For signing JWTs and exposing the JWKS endpoint.
-export const jwksAuthority = new JoseJwksAuthority(jwksStore, 8.64e6); // 100 days key lifetime
+const jwksAuthority = new JoseJwksAuthority(jwksStore, 8.64e6); // 100 days key lifetime
 
 // To rotate keys and clean up old keys from the store.
-export const jwksRotator = new JwksRotator({
+const jwksRotator = new JwksRotator({
   keyGenerator: jwksAuthority,
   rotatorKeyStore: jwksStore,
   rotationIntervalMs: 7.884e9, // 91 days
