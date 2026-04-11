@@ -15,7 +15,7 @@ new JwksRotator(options: JwksRotatorOptions)
 ```ts
 interface JwksRotatorOptions {
   keyGenerator: KeyGenerator;
-  rotatorKeyStore: JwksRotationTimestampStore;
+  rotationTimestampStore: JwksRotationTimestampStore;
   rotationIntervalMs: number;
 }
 ```
@@ -23,7 +23,7 @@ interface JwksRotatorOptions {
 | Property | Type | Description |
 | --- | --- | --- |
 | `keyGenerator` | `KeyGenerator` | The key generator that produces new signing key pairs. [`JoseJwksAuthority`](./jose-jwks-authority) implements this interface. |
-| `rotatorKeyStore` | `JwksRotationTimestampStore` | The store that tracks the last rotation timestamp. [`InMemoryKeyStore`](./in-memory-key-store) implements this interface. |
+| `rotationTimestampStore` | `JwksRotationTimestampStore` | The store that tracks the last rotation timestamp. [`InMemoryKeyStore`](./in-memory-key-store) implements this interface. |
 | `rotationIntervalMs` | `number` | How often (in milliseconds) new keys should be generated. For example, `7.884e9` for ~91 days. |
 
 ### Setup
@@ -40,7 +40,7 @@ const authority = new JoseJwksAuthority(store, 8.64e6); // 100-day key TTL
 
 const rotator = new JwksRotator({
   keyGenerator: authority,
-  rotatorKeyStore: store,
+  rotationTimestampStore: store,
   rotationIntervalMs: 7.884e9, // 91 days
 });
 ```

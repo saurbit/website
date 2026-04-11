@@ -55,7 +55,7 @@ const authority = new JoseJwksAuthority(store, 8.64e6); // 100-day TTL
 // 2. Set up key rotation
 const rotator = new JwksRotator({
   keyGenerator: authority,
-  rotatorKeyStore: store,
+  rotationTimestampStore: store,
   rotationIntervalMs: 7.884e9, // 91 days
 });
 await rotator.checkAndRotateKeys();

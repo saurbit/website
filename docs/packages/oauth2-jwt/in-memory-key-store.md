@@ -32,7 +32,7 @@ const authority = new JoseJwksAuthority(store, 8.64e6);
 
 const rotator = new JwksRotator({
   keyGenerator: authority,
-  rotatorKeyStore: store, // same instance, different interface
+  rotationTimestampStore: store, // same instance, different interface
   rotationIntervalMs: 7.884e9,
 });
 ```

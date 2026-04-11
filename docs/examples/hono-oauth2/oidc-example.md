@@ -91,7 +91,7 @@ const jwksAuthority = new JoseJwksAuthority(jwksStore, 8.64e6); // 100 days key 
 // Rotates keys and cleans up old ones
 const jwksRotator = new JwksRotator({
   keyGenerator: jwksAuthority,
-  rotatorKeyStore: jwksStore,
+  rotationTimestampStore: jwksStore,
   rotationIntervalMs: 7.884e9, // 91 days
 });
 ```
