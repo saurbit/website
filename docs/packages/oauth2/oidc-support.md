@@ -475,6 +475,21 @@ new OIDCMultipleFlows({
 | `description`          | `string`                                              | Optional description for the OpenAPI security scheme.     |
 | `openidConfiguration`  | `Record<string, string \| string[] \| undefined>`     | Optional static overrides for the merged discovery document. |
 
+### `getTokenEndpoint()`
+
+```ts
+getTokenEndpoint(): string
+```
+
+Returns the configured token endpoint URL. Useful when you need to register endpoint routes dynamically.
+
+### `getJwksEndpoint()`
+```ts
+getJwksEndpoint(): string
+```
+
+Returns the configured JWKS endpoint URL.
+
 ### `token(request)`
 
 ```ts
