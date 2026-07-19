@@ -1,6 +1,6 @@
 # JWT Methods
 
-Three ready-made functions that satisfy the `JwtVerify`, `JwtDecode`, and `JwkVerify` interfaces expected by `@saurbit/oauth2`. They wrap [jose](https://github.com/panva/jose) and handle the necessary type conversions so you can plug them directly into the `@saurbit/oauth2` builders.
+Four ready-made functions that satisfy the `JwtVerify`, `JwtDecode`, `JwkVerify`, and `JwkThumbprintCalculator` interfaces expected by `@saurbit/oauth2`. They wrap [jose](https://github.com/panva/jose) and handle the necessary type conversions so you can plug them directly into the `@saurbit/oauth2` builders.
 
 ## `verifyJwt` {#verifyjwt}
 
@@ -72,9 +72,9 @@ Pass this as the `JwkVerify` argument to [`DPoPTokenType`](/packages/oauth2/toke
 
 ```ts
 import { createInMemoryReplayStore, DPoPTokenType } from "@saurbit/oauth2";
-import { verifyJwk } from "@saurbit/oauth2-jwt";
+import { calculateJwkThumbprint, verifyJwk } from "@saurbit/oauth2-jwt";
 
-const dpop = new DPoPTokenType(verifyJwk, createInMemoryReplayStore());
+const dpop = new DPoPTokenType(verifyJwk, calculateJwkThumbprint, createInMemoryReplayStore());
 ```
 
 Then pass it to your flow builder:
@@ -87,3 +87,15 @@ const flow = new AuthorizationCodeFlowBuilder({ tokenEndpoint: "/token" })
   // ... other builder methods
   .build();
 ```
+
+---
+
+## `calculateJwkThumbprint` {#calculatejwkthumbprint}
+
+```ts
+const calculateJwkThumbprint: JwkThumbprintCalculator
+```
+
+Calculates the SHA-256 JWK thumbprint for a given JSON Web Key. The result is a base64url-encoded string that uniquely identifies the key. Wraps jose's [`calculateJwkThumbprint`](https://github.com/panva/jose/blob/main/docs/functions/key_thumbprint.calculateJwkThumbprint.md).
+
+Pass this as the `JwkThumbprintCalculator` argument to [`DPoPTokenType`](/packages/oauth2/token-types#dpop).

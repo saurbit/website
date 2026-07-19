@@ -122,10 +122,11 @@ deno add jsr:@saurbit/oauth2-jwt
 
 ```ts
 import { createInMemoryReplayStore, DPoPTokenType } from "@saurbit/oauth2";
-import { verifyJwk } from "@saurbit/oauth2-jwt";
+import { calculateJwkThumbprint, verifyJwk } from "@saurbit/oauth2-jwt";
 
 const dpop = new DPoPTokenType(
   verifyJwk,
+  calculateJwkThumbprint,
   createInMemoryReplayStore(),
 );
 ```
@@ -144,13 +145,14 @@ const flow = new AuthorizationCodeFlowBuilder({ tokenEndpoint: "/token" })
 ### Constructor
 
 ```ts
-new DPoPTokenType(jwkVerify: JwkVerify, replayDetector?: ReplayDetector)
+new DPoPTokenType(jwkVerify: JwkVerify, jwkThumbprintCalculator: JwkThumbprintCalculator, replayDetector?: ReplayDetector)
 ```
 
-| Parameter        | Type              | Description                                                                  |
-| ---------------- | ----------------- | ---------------------------------------------------------------------------- |
-| `jwkVerify`      | `JwkVerify`       | A function that verifies a DPoP proof JWT against a JWK Set.                 |
-| `replayDetector` | `ReplayDetector?` | An optional replay detector for JTI tracking. Defaults to an in-memory store. |
+| Parameter                 | Type                       | Description                                                                   |
+| ------------------------- | -------------------------- | ----------------------------------------------------------------------------- |
+| `jwkVerify`               | `JwkVerify`                | A function that verifies a DPoP proof JWT against a JWK Set.                  |
+| `jwkThumbprintCalculator` | `JwkThumbprintCalculator`  | A function that calculates the JWK thumbprint for a given JWK.                |
+| `replayDetector`          | `ReplayDetector?`          | An optional replay detector for JTI tracking. Defaults to an in-memory store. |
 
 ### Methods
 
@@ -185,6 +187,52 @@ Overrides the default DPoP proof validation handler for protected resource reque
 ```
 
 Overrides the default DPoP proof validation handler for token endpoint requests. The handler receives the incoming `Request` and the configured token lifetime.
+
+#### `addJwkThumbprintToCnfClaim(claims, thumbprint)`
+
+```ts
+.addJwkThumbprintToCnfClaim(claims: JwtPayload, thumbprint: string): JwtPayload
+.addJwkThumbprintToCnfClaim(claims: JwtPayload, response: TokenTypeValidationResponse): JwtPayload
+```
+
+Adds the JWK thumbprint to the `cnf.jkt` claim of a JWT payload, binding the access token to the client's public key. Call this when issuing a DPoP-bound access token.
+
+The second argument is either:
+- A `string` — the raw JWK thumbprint.
+- A `TokenTypeValidationResponse` — the validation response returned by `isValidTokenRequest`, from which the thumbprint is extracted automatically.
+
+```ts
+// With a raw thumbprint string
+dpop.addJwkThumbprintToCnfClaim(claims, "the-jwk-thumbprint");
+
+// With a validation response
+dpop.addJwkThumbprintToCnfClaim(claims, tokenTypeValidationResponse);
+```
+
+Throws if the thumbprint cannot be added to the payload.
+
+#### `validateThumbprint(response, thumbprint)`
+
+```ts
+.validateThumbprint(response: TokenTypeValidationResponse, thumbprint: string): boolean
+.validateThumbprint(response: TokenTypeValidationResponse, payload: JwtPayload): boolean
+```
+
+Validates that the JWK thumbprint in a `TokenTypeValidationResponse` matches an expected value. Use this on protected resource endpoints to verify that the DPoP proof was created with the same key that the access token was bound to.
+
+The second argument is either:
+- A `string` — the expected JWK thumbprint.
+- A `JwtPayload` object — the access token payload containing the `cnf.jkt` claim.
+
+```ts
+// With a raw thumbprint string
+dpop.validateThumbprint(tokenTypeValidationResponse, "the-jwk-thumbprint");
+
+// With an access token payload
+dpop.validateThumbprint(tokenTypeValidationResponse, accessTokenPayload);
+```
+
+Throws if the response is invalid or the thumbprint does not match.
 
 ---
 
