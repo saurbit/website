@@ -119,6 +119,43 @@ const dpop = new DPoPTokenType(
 const calculateJwkThumbprint: JwkThumbprintCalculator
 ```
 
-Calculates the SHA-256 JWK thumbprint for a given JSON Web Key. The result is a base64url-encoded string that uniquely identifies the key. Wraps jose's [`calculateJwkThumbprint`](https://github.com/panva/jose/blob/main/docs/functions/key_thumbprint.calculateJwkThumbprint.md).
+Calculates the SHA-256 JWK thumbprint for a given JSON Web Key. The result is a base64url-encoded string that uniquely identifies the key. Wraps jose's `calculateJwkThumbprint`.
 
 Pass this as the `JwkThumbprintCalculator` argument to [`DPoPTokenType`](/packages/oauth2/token-types#dpop).
+
+### Usage in an Authorization Code Flow
+
+```ts
+import { AuthorizationCodeFlowBuilder, DPoPTokenType, createInMemoryReplayStore,  } from "@saurbit/oauth2";
+import { JoseJwksAuthority, calculateJwkThumbprint, createInMemoryKeyStore, verifyJwk } from "@saurbit/oauth2-jwt";
+
+// key store and authority
+const jwksAuthority = new JoseJwksAuthority(createInMemoryKeyStore(), 8.64e6);
+
+// token type
+const dpop = new DPoPTokenType(verifyJwk, calculateJwkThumbprint, createInMemoryReplayStore());
+
+// flow builder
+const flow = new AuthorizationCodeFlowBuilder({ tokenEndpoint: "/token" })
+  // set the DPoP token type for the flow
+  .setTokenType(dpop)
+  // handle token verification
+  .verifyToken(async (_, { token, tokenTypeValidation }) => {
+    
+    // verify the JWT and extract its payload
+    const jwtAccessTokenPayload = await jwksAuthority.verify(token);
+    
+    try {
+      // validate the DPoP proof and its thumbprint
+      dpop.validateThumbprint(tokenTypeValidation, jwtAccessTokenPayload);
+    } catch (error) {
+      // If the DPoP proof is invalid or the thumbprint does not match, return an invalid token response.
+      return { isValid: false, message: error.message };
+    }
+
+    // ... additional validation logic ...
+  })
+  // ... other builder methods
+  .build();
+
+```
