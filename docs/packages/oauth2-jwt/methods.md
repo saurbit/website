@@ -64,7 +64,7 @@ This function does not validate the token's signature, expiration, or any other 
 const verifyJwk: JwkVerify
 ```
 
-Verifies a JWT whose header embeds the public key as a JWK (`"jwk"` header parameter). The public key is extracted from the JWT header itself and used to verify the signature. Only the `ES256` algorithm is accepted.
+Verifies a JWT whose header embeds the public key as a JWK (`"jwk"` header parameter). The public key is extracted from the JWT header itself and used to verify the signature. Only the `ES256`, `ES384`, `ES512`, `PS256`, `PS384`, and `PS512` algorithms are accepted.
 
 Pass this as the `JwkVerify` argument to [`DPoPTokenType`](/packages/oauth2/token-types#dpop).
 
@@ -86,6 +86,29 @@ const flow = new AuthorizationCodeFlowBuilder({ tokenEndpoint: "/token" })
   .setTokenType(dpop)
   // ... other builder methods
   .build();
+```
+
+---
+
+## `createDPoPJwkVerifier` {#createdpopjwkverifier}
+
+Creates a `JwkVerify` function with a custom set of allowed algorithms. This is useful if you want to restrict the algorithms accepted for DPoP token validation.
+
+```ts
+const createDPoPJwkVerifier: (config?: DPoPJwkVerifierConfig) => JwkVerify
+```
+
+### Usage with `DPoPTokenType`
+
+```ts
+import { createInMemoryReplayStore, DPoPTokenType } from "@saurbit/oauth2";
+import { calculateJwkThumbprint, createDPoPJwkVerifier } from "@saurbit/oauth2-jwt";
+
+const dpop = new DPoPTokenType(
+  createDPoPJwkVerifier(["ES256", "PS256"]), 
+  calculateJwkThumbprint, 
+  createInMemoryReplayStore()
+);
 ```
 
 ---
