@@ -234,6 +234,20 @@ dpop.validateThumbprint(tokenTypeValidationResponse, accessTokenPayload);
 
 Throws if the response is invalid or the thumbprint does not match.
 
+#### `validateAccessTokenHash(response, accessToken)`
+
+```ts
+.validateAccessTokenHash(response: TokenTypeValidationResponse, accessToken: string): Promise<void>
+```
+
+Validates the access token hash (`ath`) in a DPoP proof against the provided access token. Use this on protected resource endpoints to confirm that the DPoP proof was created for the specific access token presented in the request.
+
+Throws if the response is invalid, if the `ath` claim is missing from the DPoP proof payload, or if the computed hash does not match the `ath` claim.
+
+```ts
+await dpop.validateAccessTokenHash(tokenTypeValidationResponse, accessToken);
+```
+
 ---
 
 ## Replay Detection {#replay-detection}
