@@ -75,7 +75,7 @@ import { PrivateKeyJwt } from "@saurbit/oauth2";
 import { createJwtVerify, decodeJwt } from "@saurbit/oauth2-jwt";
 
 const verifyJwt = createJwtVerify({
-  issuer: "https://auth.example.com",
+  audience: "https://auth.example.com/token",
 });
 
 const privateKeyJwt = new PrivateKeyJwt(decodeJwt, verifyJwt)

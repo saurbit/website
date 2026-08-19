@@ -242,7 +242,7 @@ privateKeyJwt.getPublicKeyForClient(async (clientId, decoded, clientAssertion) =
 
 Registers the handler that retrieves the client's public key for JWT signature verification. The handler receives the same parameters as `getClientSecret` above.
 
-Return the public key as a PEM `string` or `Uint8Array`, or `null` if the client is not found.
+Return the public key as an `object`, or `null` if the client is not found.
 
 ### Full example
 
