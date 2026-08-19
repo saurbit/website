@@ -33,9 +33,10 @@ deno add jsr:@saurbit/oauth2-jwt
 | Export | Kind | Description |
 | --- | --- | --- |
 | [`verifyJwt`](./methods#verifyjwt) | Function | Verify a JWT with a secret or key. Can be used by [`ClientSecretJwt`](/packages/oauth2/client-auth-methods#client-secret-jwt) and [`PrivateKeyJwt`](/packages/oauth2/client-auth-methods#private-key-jwt). |
+| [`createJwtVerify`](./methods#createjwtverify) | Function | Create a JWT verifier with pre-configured claim verification options. Can be used by [`ClientSecretJwt`](/packages/oauth2/client-auth-methods#client-secret-jwt) and [`PrivateKeyJwt`](/packages/oauth2/client-auth-methods#private-key-jwt). |
 | [`decodeJwt`](./methods#decodejwt) | Function | Decode a JWT payload without verification. Can be used by [`ClientSecretJwt`](/packages/oauth2/client-auth-methods#client-secret-jwt) and [`PrivateKeyJwt`](/packages/oauth2/client-auth-methods#private-key-jwt). |
 | [`verifyJwk`](./methods#verifyjwk) | Function | Verify a JWT with an embedded JWK (DPoP proofs). Can be used by [`DPoPTokenType`](/packages/oauth2/token-types#dpop). |
-| [`createDPoPJwkVerifier`](./methods#createdpopjwkverifier) | Function | Create a DPoP JWK verifier with configurable algorithms. Can be used by [`DPoPTokenType`](/packages/oauth2/token-types#dpop). |
+| [`createDPoPJwkVerify`](./methods#createdpopjwkverify) | Function | Create a DPoP JWK verifier with configurable algorithms. Can be used by [`DPoPTokenType`](/packages/oauth2/token-types#dpop). |
 | [`calculateJwkThumbprint`](./methods#calculatejwkthumbprint) | Function | Calculate the SHA-256 JWK thumbprint for a given JWK. Can be used by [`DPoPTokenType`](/packages/oauth2/token-types#dpop). |
 | [`JoseJwksAuthority`](./jose-jwks-authority) | Class | Signs and verifies JWTs, manages RS256 key pairs, serves the JWKS endpoint. |
 | [`InMemoryKeyStore`](./in-memory-key-store) | Class | In-memory `JwksKeyStore` and `JwksRotationTimestampStore` implementation. |

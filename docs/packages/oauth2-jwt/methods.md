@@ -42,6 +42,52 @@ const privateKeyJwt = new PrivateKeyJwt(decodeJwt, verifyJwt)
 
 ---
 
+## `createJwtVerify` {#createjwtverify}
+
+Creates a `JwtVerify` function with pre-configured claim verification options (issuer, audience, etc.). This is useful when you want to reuse the same verification settings across multiple calls without repeating them each time.
+
+```ts
+function createJwtVerify(options: JwtClaimVerificationOptions): JwtVerify
+```
+
+### Usage with `ClientSecretJwt`
+
+```ts
+import { ClientSecretJwt } from "@saurbit/oauth2";
+import { createJwtVerify, decodeJwt } from "@saurbit/oauth2-jwt";
+
+const verifyJwt = createJwtVerify({
+  issuer: "https://auth.example.com",
+});
+
+const clientSecretJwt = new ClientSecretJwt(decodeJwt, verifyJwt)
+  .addAlgorithm(ClientSecretJwt.algo.HS256)
+  .getClientSecret(async (clientId) => {
+    const client = await db.findClientById(clientId);
+    return client?.secret ?? null;
+  });
+```
+
+### Usage with `PrivateKeyJwt`
+
+```ts
+import { PrivateKeyJwt } from "@saurbit/oauth2";
+import { createJwtVerify, decodeJwt } from "@saurbit/oauth2-jwt";
+
+const verifyJwt = createJwtVerify({
+  issuer: "https://auth.example.com",
+});
+
+const privateKeyJwt = new PrivateKeyJwt(decodeJwt, verifyJwt)
+  .addAlgorithm(PrivateKeyJwt.algo.RS256)
+  .getPublicKeyForClient(async (clientId) => {
+    const client = await db.findClientById(clientId);
+    return client?.publicKey ?? null;
+  });
+```
+
+---
+
 ## `decodeJwt` {#decodejwt}
 
 ```ts
@@ -90,22 +136,22 @@ const flow = new AuthorizationCodeFlowBuilder({ tokenEndpoint: "/token" })
 
 ---
 
-## `createDPoPJwkVerifier` {#createdpopjwkverifier}
+## `createDPoPJwkVerify` {#createdpopjwkverify}
 
 Creates a `JwkVerify` function with a custom set of allowed algorithms. This is useful if you want to restrict the algorithms accepted for DPoP token validation.
 
 ```ts
-const createDPoPJwkVerifier: (config?: DPoPJwkVerifierConfig) => JwkVerify
+const createDPoPJwkVerify: (config?: DPoPJwkVerifierConfig) => JwkVerify
 ```
 
 ### Usage with `DPoPTokenType`
 
 ```ts
 import { createInMemoryReplayStore, DPoPTokenType } from "@saurbit/oauth2";
-import { calculateJwkThumbprint, createDPoPJwkVerifier } from "@saurbit/oauth2-jwt";
+import { calculateJwkThumbprint, createDPoPJwkVerify } from "@saurbit/oauth2-jwt";
 
 const dpop = new DPoPTokenType(
-  createDPoPJwkVerifier(["ES256", "PS256"]), 
+  createDPoPJwkVerify(["ES256", "PS256"]), 
   calculateJwkThumbprint, 
   createInMemoryReplayStore()
 );
