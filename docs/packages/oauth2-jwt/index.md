@@ -32,8 +32,10 @@ deno add jsr:@saurbit/oauth2-jwt
 
 | Export | Kind | Description |
 | --- | --- | --- |
-| [`verifyJwt`](./methods#verifyjwt) | Function | Verify a JWT with a secret or key. Can be used by [`ClientSecretJwt`](/packages/oauth2/client-auth-methods#client-secret-jwt) and [`PrivateKeyJwt`](/packages/oauth2/client-auth-methods#private-key-jwt). |
-| [`createJwtVerify`](./methods#createjwtverify) | Function | Create a JWT verifier with pre-configured claim verification options. Can be used by [`ClientSecretJwt`](/packages/oauth2/client-auth-methods#client-secret-jwt) and [`PrivateKeyJwt`](/packages/oauth2/client-auth-methods#private-key-jwt). |
+| [`verifyJwt`](./methods#verifyjwt) | Function | Verify a JWT with a secret or key. |
+| [`createJwtVerify`](./methods#createjwtverify) | Function | Create a JWT verifier with pre-configured claim verification options. |
+| [`verifyClientAssertionJwt`](./methods#verifyclientassertionjwt) | Function | Verify a JWT with a secret or key. Can be used by [`ClientSecretJwt`](/packages/oauth2/client-auth-methods#client-secret-jwt) and [`PrivateKeyJwt`](/packages/oauth2/client-auth-methods#private-key-jwt). |
+| [`createClientAssertionJwtVerify`](./methods#createclientassertionjwtverify) | Function | Create a JWT verifier with pre-configured claim verification options. Can be used by [`ClientSecretJwt`](/packages/oauth2/client-auth-methods#client-secret-jwt) and [`PrivateKeyJwt`](/packages/oauth2/client-auth-methods#private-key-jwt). |
 | [`decodeJwt`](./methods#decodejwt) | Function | Decode a JWT payload without verification. Can be used by [`ClientSecretJwt`](/packages/oauth2/client-auth-methods#client-secret-jwt) and [`PrivateKeyJwt`](/packages/oauth2/client-auth-methods#private-key-jwt). |
 | [`verifyJwk`](./methods#verifyjwk) | Function | Verify a JWT with an embedded JWK (DPoP proofs). Can be used by [`DPoPTokenType`](/packages/oauth2/token-types#dpop). |
 | [`createDPoPJwkVerify`](./methods#createdpopjwkverify) | Function | Create a DPoP JWK verifier with configurable algorithms. Can be used by [`DPoPTokenType`](/packages/oauth2/token-types#dpop). |

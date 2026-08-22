@@ -1,6 +1,6 @@
 # JWT Methods
 
-Four ready-made functions that satisfy the `JwtVerify`, `JwtDecode`, `JwkVerify`, and `JwkThumbprintCalculator` interfaces expected by `@saurbit/oauth2`. They wrap [jose](https://github.com/panva/jose) and handle the necessary type conversions so you can plug them directly into the `@saurbit/oauth2` builders.
+Ready-made functions that satisfy the `JwtVerify`, `JwtDecode`, `ClientAssertionJwtVerify`, `JwkVerify`, and `JwkThumbprintCalculator` interfaces expected by `@saurbit/oauth2`. They wrap [jose](https://github.com/panva/jose) and handle the necessary type conversions so you can plug them directly into the `@saurbit/oauth2` builders.
 
 ## `verifyJwt` {#verifyjwt}
 
@@ -10,35 +10,9 @@ const verifyJwt: JwtVerify
 
 Verifies a JWT using the provided secret or key and returns the decoded payload. Wraps jose's [`jwtVerify`](https://github.com/panva/jose/blob/main/docs/functions/jwt_verify.jwtVerify.md).
 
-Pass this as the `JwtVerify` argument to [`ClientSecretJwt`](/packages/oauth2/client-auth-methods#client-secret-jwt) or [`PrivateKeyJwt`](/packages/oauth2/client-auth-methods#private-key-jwt).
-
-### Usage with `ClientSecretJwt`
-
-```ts
-import { ClientSecretJwt } from "@saurbit/oauth2";
-import { decodeJwt, verifyJwt } from "@saurbit/oauth2-jwt";
-
-const clientSecretJwt = new ClientSecretJwt(decodeJwt, verifyJwt)
-  .addAlgorithm(ClientSecretJwt.algo.HS256)
-  .getClientSecret(async (clientId) => {
-    const client = await db.findClientById(clientId);
-    return client?.secret ?? null;
-  });
-```
-
-### Usage with `PrivateKeyJwt`
-
-```ts
-import { PrivateKeyJwt } from "@saurbit/oauth2";
-import { decodeJwt, verifyJwt } from "@saurbit/oauth2-jwt";
-
-const privateKeyJwt = new PrivateKeyJwt(decodeJwt, verifyJwt)
-  .addAlgorithm(PrivateKeyJwt.algo.RS256)
-  .getPublicKeyForClient(async (clientId) => {
-    const client = await db.findClientById(clientId);
-    return client?.publicKey ?? null;
-  });
-```
+::: tip
+For verifying client assertion JWTs in `ClientSecretJwt` or `PrivateKeyJwt`, use [`verifyClientAssertionJwt`](#verifyclientassertionjwt) or [`createClientAssertionJwtVerify`](#createclientassertionjwtverify) instead — they accept the richer `ClientAssertionJwtVerify` signature and allow to enforce the claims required by RFC 7523.
+:::
 
 ---
 
@@ -50,17 +24,29 @@ Creates a `JwtVerify` function with pre-configured claim verification options (i
 function createJwtVerify(options: JwtClaimVerificationOptions): JwtVerify
 ```
 
+::: tip
+For pre-configuring verification options when using `ClientSecretJwt` or `PrivateKeyJwt`, use [`createClientAssertionJwtVerify`](#createclientassertionjwtverify) instead — it accepts the full `ClientAssertionJwtContext` and `Request` for more context-aware verification.
+:::
+
+---
+
+## `verifyClientAssertionJwt` {#verifyclientassertionjwt}
+
+```ts
+const verifyClientAssertionJwt: ClientAssertionJwtVerify
+```
+
+Verifies a client assertion JWT using the provided secret or key and returns the decoded payload. Wraps jose's `jwtVerify` and allows to enforce `issuer` and `subject` equal to `clientId` as required by [RFC 7523](https://datatracker.ietf.org/doc/html/rfc7523#section-3).
+
+Pass this as the `ClientAssertionJwtVerify` argument to [`ClientSecretJwt`](/packages/oauth2/client-auth-methods#client-secret-jwt) or [`PrivateKeyJwt`](/packages/oauth2/client-auth-methods#private-key-jwt).
+
 ### Usage with `ClientSecretJwt`
 
 ```ts
 import { ClientSecretJwt } from "@saurbit/oauth2";
-import { createJwtVerify, decodeJwt } from "@saurbit/oauth2-jwt";
+import { decodeJwt, verifyClientAssertionJwt } from "@saurbit/oauth2-jwt";
 
-const verifyJwt = createJwtVerify({
-  issuer: "https://auth.example.com",
-});
-
-const clientSecretJwt = new ClientSecretJwt(decodeJwt, verifyJwt)
+const clientSecretJwt = new ClientSecretJwt(decodeJwt, verifyClientAssertionJwt)
   .addAlgorithm(ClientSecretJwt.algo.HS256)
   .getClientSecret(async (clientId) => {
     const client = await db.findClientById(clientId);
@@ -72,14 +58,70 @@ const clientSecretJwt = new ClientSecretJwt(decodeJwt, verifyJwt)
 
 ```ts
 import { PrivateKeyJwt } from "@saurbit/oauth2";
-import { createJwtVerify, decodeJwt } from "@saurbit/oauth2-jwt";
+import { decodeJwt, verifyClientAssertionJwt } from "@saurbit/oauth2-jwt";
 
-const verifyJwt = createJwtVerify({
+const privateKeyJwt = new PrivateKeyJwt(decodeJwt, verifyClientAssertionJwt)
+  .addAlgorithm(PrivateKeyJwt.algo.RS256)
+  .getPublicKeyForClient(async (clientId) => {
+    const client = await db.findClientById(clientId);
+    return client?.publicKey ?? null;
+  });
+```
+
+---
+
+## `createClientAssertionJwtVerify` {#createclientassertionjwtverify}
+
+Creates a `ClientAssertionJwtVerify` function with pre-configured claim verification options. Useful when you need to enforce additional claims (e.g. `audience`) beyond the default `iss`/`sub` enforcement, or when verification options depend on the request context.
+
+```ts
+// Static options
+function createClientAssertionJwtVerify(
+  options: JwtClaimVerificationOptions,
+): ClientAssertionJwtVerify;
+
+// Dynamic options from context
+function createClientAssertionJwtVerify(
+  callback: (context: ClientAssertionJwtContext, request: Request, key: Uint8Array | object, options?: { algorithms?: string[] }) => JwtClaimVerificationOptions | Promise<JwtClaimVerificationOptions>,
+): ClientAssertionJwtVerify;
+```
+
+### Usage with static options
+
+```ts
+import { ClientSecretJwt } from "@saurbit/oauth2";
+import { createClientAssertionJwtVerify, decodeJwt } from "@saurbit/oauth2-jwt";
+
+const verifyClientAssertion = createClientAssertionJwtVerify({
   audience: "https://auth.example.com/token",
 });
 
-const privateKeyJwt = new PrivateKeyJwt(decodeJwt, verifyJwt)
-  .addAlgorithm(PrivateKeyJwt.algo.RS256)
+const clientSecretJwt = new ClientSecretJwt(decodeJwt, verifyClientAssertion)
+  .addAlgorithm(ClientSecretJwt.algo.HS256)
+  .getClientSecret(async (clientId) => {
+    const client = await db.findClientById(clientId);
+    return client?.secret ?? null;
+  });
+```
+
+### Usage with dynamic options
+
+```ts
+import { PrivateKeyJwt } from "@saurbit/oauth2";
+import { createClientAssertionJwtVerify, decodeJwt } from "@saurbit/oauth2-jwt";
+
+const verifyClientAssertion = createClientAssertionJwtVerify(
+  async (context, request) => {
+    const url = new URL(request.url);
+    return {
+      audience: url.origin + url.pathname,
+      issuer: context.clientId,
+    };
+  },
+);
+
+const privateKeyJwt = new PrivateKeyJwt(decodeJwt, verifyClientAssertion)
+  .addAlgorithm(PrivateKeyJwt.algo.ES256)
   .getPublicKeyForClient(async (clientId) => {
     const client = await db.findClientById(clientId);
     return client?.publicKey ?? null;
@@ -96,7 +138,7 @@ const decodeJwt: JwtDecode
 
 Decodes a JWT payload **without** verifying its signature. Wraps jose's [`decodeJwt`](https://github.com/panva/jose/blob/main/docs/functions/jwt_decode.decodeJwt.md).
 
-Pass this as the `JwtDecode` argument to [`ClientSecretJwt`](/packages/oauth2/client-auth-methods#client-secret-jwt) or [`PrivateKeyJwt`](/packages/oauth2/client-auth-methods#private-key-jwt) alongside [`verifyJwt`](#verifyjwt).
+Pass this as the `JwtDecode` argument to [`ClientSecretJwt`](/packages/oauth2/client-auth-methods#client-secret-jwt) or [`PrivateKeyJwt`](/packages/oauth2/client-auth-methods#private-key-jwt) alongside [`verifyClientAssertionJwt`](#verifyclientassertionjwt).
 
 ::: warning
 This function does not validate the token's signature, expiration, or any other claims. Use it only to inspect the token payload before verification, as done internally by `ClientSecretJwt` and `PrivateKeyJwt` to extract the `client_id` from the assertion.

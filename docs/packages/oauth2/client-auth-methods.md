@@ -113,9 +113,9 @@ The client creates a JWT signed with its client secret using an HMAC algorithm a
 
 ```ts
 import { ClientSecretJwt } from "@saurbit/oauth2";
-import { decodeJwt, verifyJwt } from "@saurbit/oauth2-jwt";
+import { decodeJwt, verifyClientAssertionJwt } from "@saurbit/oauth2-jwt";
 
-const clientSecretJwt = new ClientSecretJwt(decodeJwt, verifyJwt);
+const clientSecretJwt = new ClientSecretJwt(decodeJwt, verifyClientAssertionJwt);
 ```
 
 ### Configuration
@@ -161,9 +161,9 @@ Return the client secret as a `string` or `Uint8Array`, or `null` if the client 
 
 ```ts
 import { AuthorizationCodeFlowBuilder, ClientSecretJwt } from "@saurbit/oauth2";
-import { decodeJwt, verifyJwt } from "@saurbit/oauth2-jwt";
+import { decodeJwt, verifyClientAssertionJwt } from "@saurbit/oauth2-jwt";
 
-const clientSecretJwt = new ClientSecretJwt(decodeJwt, verifyJwt)
+const clientSecretJwt = new ClientSecretJwt(decodeJwt, verifyClientAssertionJwt)
   .addAlgorithm(ClientSecretJwt.algo.HS256)
   .getClientSecret(async (clientId) => {
     const client = await db.findClientById(clientId);
@@ -199,9 +199,9 @@ The client creates a JWT signed with its private key and sends it as a `client_a
 
 ```ts
 import { PrivateKeyJwt } from "@saurbit/oauth2";
-import { decodeJwt, verifyJwt } from "@saurbit/oauth2-jwt";
+import { decodeJwt, verifyClientAssertionJwt } from "@saurbit/oauth2-jwt";
 
-const privateKeyJwt = new PrivateKeyJwt(decodeJwt, verifyJwt);
+const privateKeyJwt = new PrivateKeyJwt(decodeJwt, verifyClientAssertionJwt);
 ```
 
 ### Configuration
@@ -248,9 +248,9 @@ Return the public key as an `object`, or `null` if the client is not found.
 
 ```ts
 import { AuthorizationCodeFlowBuilder, PrivateKeyJwt } from "@saurbit/oauth2";
-import { decodeJwt, verifyJwt } from "@saurbit/oauth2-jwt";
+import { decodeJwt, verifyClientAssertionJwt } from "@saurbit/oauth2-jwt";
 
-const privateKeyJwt = new PrivateKeyJwt(decodeJwt, verifyJwt)
+const privateKeyJwt = new PrivateKeyJwt(decodeJwt, verifyClientAssertionJwt)
   .addAlgorithm(PrivateKeyJwt.algo.RS256)
   .addAlgorithm(PrivateKeyJwt.algo.ES256)
   .getPublicKeyForClient(async (clientId) => {
@@ -289,9 +289,9 @@ The first method that matches the incoming request is used.
 
 ```ts
 import { AuthorizationCodeFlowBuilder, ClientSecretJwt } from "@saurbit/oauth2";
-import { decodeJwt, verifyJwt } from "@saurbit/oauth2-jwt";
+import { decodeJwt, verifyClientAssertionJwt } from "@saurbit/oauth2-jwt";
 
-const clientSecretJwt = new ClientSecretJwt(decodeJwt, verifyJwt)
+const clientSecretJwt = new ClientSecretJwt(decodeJwt, verifyClientAssertionJwt)
   .getClientSecret(async (clientId) => {
     const client = await db.findClientById(clientId);
     return client?.secret ?? null;
