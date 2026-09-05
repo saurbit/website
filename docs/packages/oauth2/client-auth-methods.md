@@ -244,7 +244,7 @@ Registers the handler that retrieves the client's public key for JWT signature v
 
 Return the public key as an `object`, or `null` if the client is not found.
 
-::: info Note
+::: info Best Practice
 The best practice is to retrieve the client's public key from a trusted source, such as a key management service or a URL specified by the client.
 :::
 
