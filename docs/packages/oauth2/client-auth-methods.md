@@ -235,8 +235,8 @@ If no algorithms are added, defaults to `RS256`.
 ```ts
 privateKeyJwt.getPublicKeyForClient(async (clientId, decoded, clientAssertion) => {
   const client = await db.findClientById(clientId);
-  if (!client) return null;
-  return client.publicKey; // PEM string or Uint8Array
+  if (!client?.publicKey) return null;
+  return client.publicKey; // JWK object
 });
 ```
 
@@ -244,18 +244,27 @@ Registers the handler that retrieves the client's public key for JWT signature v
 
 Return the public key as an `object`, or `null` if the client is not found.
 
+::: info Note
+The best practice is to retrieve the client's public key from a trusted source, such as a key management service or a URL specified by the client.
+:::
+
 ### Full example
 
 ```ts
 import { AuthorizationCodeFlowBuilder, PrivateKeyJwt } from "@saurbit/oauth2";
 import { decodeJwt, verifyClientAssertionJwt } from "@saurbit/oauth2-jwt";
+import { exportJWK, importSPKI } from "jose";
+
 
 const privateKeyJwt = new PrivateKeyJwt(decodeJwt, verifyClientAssertionJwt)
   .addAlgorithm(PrivateKeyJwt.algo.RS256)
   .addAlgorithm(PrivateKeyJwt.algo.ES256)
   .getPublicKeyForClient(async (clientId) => {
     const client = await db.findClientById(clientId);
-    return client?.publicKey ?? null;
+    if (!client?.publicKey) return null;
+    const publicKey = await importSPKI(client.publicKey, client.signingAlgorithm === "ES256" ? "ES256" : "RS256");
+    // Export the public key to JWK format for verification
+    return await exportJWK(publicKey);
   });
 
 const flow = new AuthorizationCodeFlowBuilder({ tokenEndpoint: "/token" })
