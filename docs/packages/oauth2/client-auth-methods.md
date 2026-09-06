@@ -181,7 +181,7 @@ const clientSecretJwt = new ClientSecretJwt(decodeJwt, verifyClientAssertionJwt)
   .addAlgorithm(ClientSecretJwt.algo.HS256)
   .getClientData(async (clientId) => {
     const client = await db.findClientById(clientId);
-    return client ? { id: client.id, grants: client.grants } : undefined;
+    return client ? { id: client.id, grants: client.allowedGrants } : undefined;
   })
   .getClientSecret(async (clientId, decoded, clientAssertion, clientData) => {
     if (!clientData?.id) return null;
@@ -295,18 +295,17 @@ const privateKeyJwt = new PrivateKeyJwt(decodeJwt, verifyClientAssertionJwt)
     const client = await db.findClientById(clientId);
     return client ? { 
       id: client.id, 
-      grants: client.grants, 
+      grants: client.allowedGrants, 
       metadata: { 
-        publicKey: client.publicKey, 
+        publicKeyPem: client.publicKeyPem, 
         signingAlgorithm: client.signingAlgorithm 
       } 
     } : undefined;
   })
   .getPublicKeyForClient(async (clientId, decoded, clientAssertion, clientData) => {
-    const client = await db.findClientById(clientId);
-    if (!clientData?.metadata?.publicKey) return null;
+    if (!clientData?.metadata?.publicKeyPem) return null;
     const publicKey = await importSPKI(
-      clientData.metadata.publicKey, 
+      clientData.metadata.publicKeyPem, 
       clientData.metadata.signingAlgorithm === "ES256" ? "ES256" : "RS256"
     );
     // Export the public key to JWK format for verification
