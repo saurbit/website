@@ -68,6 +68,8 @@ Called at the **token endpoint** to look up and authenticate a client by its ID 
 | `clientSecret` | `string`               | The client secret.                                     |
 | `grantType`    | `string`               | The grant type. Always `"client_credentials"`.         |
 | `scope`        | `string[] \| undefined` | The requested scopes, if provided in the request body. |
+| `clientAuthMethod` | `string \| undefined` | The client authentication method that matched, if any. See [Common Builder & Flow API](./builders#client-auth-data). |
+| `clientAuthData`   | `Partial<OAuth2Client> \| undefined` | Client data resolved by the authentication method, if any. See [Common Builder & Flow API](./builders#client-auth-data). |
 
 Your implementation should:
 1. Verify the `clientId` and `clientSecret` match a registered client.

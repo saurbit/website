@@ -168,6 +168,8 @@ For `authorization_code` grants, the request contains:
 | `code`         | `string`              | The authorization code to validate.                 |
 | `codeVerifier` | `string \| undefined` | The PKCE code verifier, if PKCE was used.           |
 | `redirectUri`  | `string \| undefined` | The redirect URI (must match the original request). |
+| `clientAuthMethod` | `string \| undefined` | The client authentication method that matched, if any. See [Common Builder & Flow API](./builders#client-auth-data). |
+| `clientAuthData`   | `Partial<OAuth2Client> \| undefined` | Client data resolved by the authentication method, if any. See [Common Builder & Flow API](./builders#client-auth-data). |
 
 For `refresh_token` grants:
 
@@ -178,6 +180,8 @@ For `refresh_token` grants:
 | `grantType`    | `"refresh_token"`     | The grant type.                          |
 | `refreshToken` | `string`              | The refresh token to validate.           |
 | `scope`        | `string[] \| undefined` | The requested scopes for the new token.|
+| `clientAuthMethod` | `string \| undefined` | The client authentication method that matched, if any. See [Common Builder & Flow API](./builders#client-auth-data). |
+| `clientAuthData`   | `Partial<OAuth2Client> \| undefined` | Client data resolved by the authentication method, if any. See [Common Builder & Flow API](./builders#client-auth-data). |
 
 ::: warning Important
 When handling `authorization_code` requests, your implementation **must**:

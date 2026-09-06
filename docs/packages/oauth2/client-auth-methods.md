@@ -184,8 +184,9 @@ const clientSecretJwt = new ClientSecretJwt(decodeJwt, verifyClientAssertionJwt)
     return client ? { id: client.id, grants: client.grants } : undefined;
   })
   .getClientSecret(async (clientId, decoded, clientAssertion, clientData) => {
-    const client = await db.findClientById(clientId);
-    return client?.secret ?? null;
+    if (!clientData?.id) return null;
+    const secret = await db.findClientSecretById(clientData.id);
+    return secret ?? null;
   });
 
 const flow = new AuthorizationCodeFlowBuilder({ tokenEndpoint: "/token" })
@@ -292,12 +293,22 @@ const privateKeyJwt = new PrivateKeyJwt(decodeJwt, verifyClientAssertionJwt)
   .addAlgorithm(PrivateKeyJwt.algo.ES256)
   .getClientData(async (clientId) => {
     const client = await db.findClientById(clientId);
-    return client ? { id: client.id, grants: client.grants } : undefined;
+    return client ? { 
+      id: client.id, 
+      grants: client.grants, 
+      metadata: { 
+        publicKey: client.publicKey, 
+        signingAlgorithm: client.signingAlgorithm 
+      } 
+    } : undefined;
   })
   .getPublicKeyForClient(async (clientId, decoded, clientAssertion, clientData) => {
     const client = await db.findClientById(clientId);
-    if (!client?.publicKey) return null;
-    const publicKey = await importSPKI(client.publicKey, client.signingAlgorithm === "ES256" ? "ES256" : "RS256");
+    if (!clientData?.metadata?.publicKey) return null;
+    const publicKey = await importSPKI(
+      clientData.metadata.publicKey, 
+      clientData.metadata.signingAlgorithm === "ES256" ? "ES256" : "RS256"
+    );
     // Export the public key to JWK format for verification
     return await exportJWK(publicKey);
   });
