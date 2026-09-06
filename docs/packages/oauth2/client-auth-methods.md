@@ -154,8 +154,22 @@ Registers the handler that retrieves the client's secret for JWT signature verif
 | `clientId`        | `string`     | The client ID extracted from the JWT `aud` claim.  |
 | `decoded`         | `JwtPayload` | The decoded (unverified) JWT payload.              |
 | `clientAssertion` | `string`     | The raw JWT assertion string.                      |
+| `clientData`       | `Partial<OAuth2Client> \| undefined` | The client data retrieved by the `getClientData` handler, if available. |
 
 Return the client secret as a `string` or `Uint8Array`, or `null` if the client is not found.
+
+#### `getClientData(handler)`
+
+```ts
+clientSecretJwt.getClientData(async (clientId, decoded, clientAssertion) => {
+  const client = await db.findClientById(clientId);
+  return client ? { id: client.id, grants: client.grants } : undefined;
+});
+```
+
+Optionally registers a handler that retrieves client information based on the decoded JWT and client assertion, before `getClientSecret` is called. The handler receives the same parameters as `getClientSecret` above, and returns a `Partial<OAuth2Client>` or `undefined`.
+
+The resolved data is passed as a fourth argument to `getClientSecret`, and is also exposed as `tokenRequest.clientAuthData` in the flow builder's `getClient` handler, useful to avoid a second lookup there.
 
 ### Full example
 
@@ -165,7 +179,11 @@ import { decodeJwt, verifyClientAssertionJwt } from "@saurbit/oauth2-jwt";
 
 const clientSecretJwt = new ClientSecretJwt(decodeJwt, verifyClientAssertionJwt)
   .addAlgorithm(ClientSecretJwt.algo.HS256)
-  .getClientSecret(async (clientId) => {
+  .getClientData(async (clientId) => {
+    const client = await db.findClientById(clientId);
+    return client ? { id: client.id, grants: client.grants } : undefined;
+  })
+  .getClientSecret(async (clientId, decoded, clientAssertion, clientData) => {
     const client = await db.findClientById(clientId);
     return client?.secret ?? null;
   });
@@ -248,6 +266,19 @@ Return the public key as an `object`, or `null` if the client is not found.
 The best practice is to retrieve the client's public key from a trusted source, such as a key management service or a URL specified by the client.
 :::
 
+#### `getClientData(handler)`
+
+```ts
+privateKeyJwt.getClientData(async (clientId, decoded, clientAssertion) => {
+  const client = await db.findClientById(clientId);
+  return client ? { id: client.id, grants: client.grants } : undefined;
+});
+```
+
+Optionally registers a handler that retrieves client information based on the decoded JWT and client assertion, before `getPublicKeyForClient` is called. The handler receives the same parameters as `getPublicKeyForClient` above, and returns a `Partial<OAuth2Client>` or `undefined`.
+
+The resolved data is passed as a fourth argument to `getPublicKeyForClient`, and is also exposed as `tokenRequest.clientAuthData` in the flow builder's `getClient` handler, useful when the public key lookup (e.g. from a key manager or `jwks_uri`) doesn't need the full client record, but later steps in the flow builder do.
+
 ### Full example
 
 ```ts
@@ -259,7 +290,11 @@ import { exportJWK, importSPKI } from "jose";
 const privateKeyJwt = new PrivateKeyJwt(decodeJwt, verifyClientAssertionJwt)
   .addAlgorithm(PrivateKeyJwt.algo.RS256)
   .addAlgorithm(PrivateKeyJwt.algo.ES256)
-  .getPublicKeyForClient(async (clientId) => {
+  .getClientData(async (clientId) => {
+    const client = await db.findClientById(clientId);
+    return client ? { id: client.id, grants: client.grants } : undefined;
+  })
+  .getPublicKeyForClient(async (clientId, decoded, clientAssertion, clientData) => {
     const client = await db.findClientById(clientId);
     if (!client?.publicKey) return null;
     const publicKey = await importSPKI(client.publicKey, client.signingAlgorithm === "ES256" ? "ES256" : "RS256");
