@@ -29,6 +29,7 @@ interface TokenType {
   /** Optional — validates the request at the token endpoint before client auth. */
   isValidTokenRequest?(
     request: Request,
+    ctxt: { grantType: "refresh_token"; refreshToken: string } | { grantType: string },
   ): TokenTypeValidationResponse | Promise<TokenTypeValidationResponse>;
 }
 ```
