@@ -333,11 +333,13 @@ grant_type=authorization_code&code=abc123&client_assertion_type=urn:ietf:params:
 
 You can register several authentication methods on the same flow. Regardless of registration order, the flow always evaluates methods in the following fixed priority:
 
-1. `client_secret_basic`
-2. `client_secret_post`
-3. `client_secret_jwt`
-4. `private_key_jwt`
-5. `none`
+1. `tls_client_auth`
+2. `self_signed_tls_client_auth`
+3. `private_key_jwt`
+4. `client_secret_jwt`
+5. `client_secret_basic`
+6. `client_secret_post`
+7. `none`
 
 The first method that matches the incoming request is used.
 
