@@ -150,12 +150,12 @@ The token type also exposes helpers for issuing bound tokens:
 | Method                                                 | Description                                                                                                              |
 | ------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------ |
 | `computeThumbprint(pem)`                               | Returns `{ x5tS256 }`, the base64url SHA-256 thumbprint of the certificate. Accepts the URL-encoded PEM of the header.   |
-| `applyBinding(claims, pemOrThumbprint)`                | Adds the thumbprint to the `cnf` claim (`x5t#S256`) of `claims`.                                                         |
+| `applyBinding(claims, pemOrThumbprint)`                | Adds the thumbprint to the `cnf` claim (`x5t#S256`) of `claims`. Accepts a PEM certificate (plain or URL-encoded, as forwarded by the proxy) or a precomputed thumbprint. |
 | `addThumbprintToCnfClaim(claims, thumbprint)`          | Lower-level variant of `applyBinding` taking a precomputed thumbprint.                                                   |
 | `calculateX5tS256(pem)`, `calculateHexThumbprint(pem)` | Thumbprint as base64url or lowercase hex.                                                                                |
 
 ::: tip
-The certificate received in the header is URL-encoded. Compute the thumbprint with `computeThumbprint()` and give that thumbprint to `applyBinding()`.
+The certificate received in the header is URL-encoded. Both `computeThumbprint()` and `applyBinding()` accept it as is. Computing the thumbprint once and passing it to `applyBinding()` avoids hashing the certificate several times.
 :::
 
 ---
