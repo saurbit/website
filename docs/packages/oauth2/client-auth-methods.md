@@ -13,6 +13,8 @@ You register methods on any flow builder using `addClientAuthenticationMethod()`
 | `none`                | `NoneAuthMethod`     | No              | Public clients — client ID only, no secret.                  |
 | `client_secret_jwt`   | `ClientSecretJwt`    | Yes             | JWT assertion signed with a shared secret (HMAC).            |
 | `private_key_jwt`     | `PrivateKeyJwt`      | Yes             | JWT assertion signed with the client's private key (asymmetric). |
+| [`self_signed_tls_client_auth`](./client-auth-methods/self-signed-tls-client-auth) | `SelfSignedTlsClientAuthMethod` | Yes             | Client authenticates using a self-signed TLS certificate (mTLS). |
+| `tls_client_auth` | `TlsClientAuth` | Yes             | Client authenticates using a TLS client certificate.         |
 
 ---
 
@@ -326,6 +328,33 @@ Content-Type: application/x-www-form-urlencoded
 
 grant_type=authorization_code&code=abc123&client_assertion_type=urn:ietf:params:oauth:client-assertion-type:jwt-bearer&client_assertion=eyJhbGciOiJSUzI1NiJ9...
 ```
+
+---
+
+## `self_signed_tls_client_auth` {#self-signed-tls-client-auth}
+
+The client authenticates at the token endpoint with a self-signed TLS certificate presented over mutual TLS (mTLS, [RFC 8705](https://datatracker.ietf.org/doc/html/rfc8705)). The reverse proxy in front of the authorization server forwards the certificate in headers, and `SelfSignedTlsClientAuthMethod` matches it against the certificates in the client's trusted JWKS. It also supports issuing certificate-bound access and refresh tokens.
+
+```ts
+import { AuthorizationCodeFlowBuilder, SelfSignedTlsClientAuthMethod } from "@saurbit/oauth2";
+
+const selfSignedTls = new SelfSignedTlsClientAuthMethod({
+  certHeaderName: "x-ssl-client-cert",
+  certDnHeaderName: "x-ssl-client-dn",
+  getClientData: async (clientId, { certDn }) => 
+    certDn ? await findClientBySubjectDnAndId(certDn, clientId) : undefined,
+  getJwks: async (clientId, headers, clientData) => fetchClientJwks(clientData?.jwksUri),
+});
+
+const flow = new AuthorizationCodeFlowBuilder({ tokenEndpoint: "/token" })
+  .addClientAuthenticationMethod(selfSignedTls)
+  // ... other builder methods
+  .build();
+```
+
+See [Self-Signed TLS Client Authentication](./client-auth-methods/self-signed-tls-client-auth) for the full documentation: proxy setup, certificate-bound tokens, and a complete Docker Compose example.
+
+
 
 ---
 

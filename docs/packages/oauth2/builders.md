@@ -113,7 +113,7 @@ Every token request object passed to a flow's `getClient` handler (for both the 
 | `clientAuthMethod` | `string \| undefined`                 | The client authentication method that matched the request (e.g. `"client_secret_basic"`, `"private_key_jwt"`). |
 | `clientAuthData`   | `Partial<OAuth2Client> \| undefined`  | Client data resolved by the authentication method's `getClientData` handler, if any.                     |
 
-`clientAuthData` is only populated for the `ClientSecretJwt` and `PrivateKeyJwt` authentication methods, and only if a `getClientData` handler was registered on them. It lets you avoid a second client lookup in `getClient` when the authentication method already resolved the client while verifying the request. See [Client Authentication Methods → `getClientData`](./client-auth-methods#getclientdata-handler-1).
+`clientAuthData` is only populated for the `ClientSecretJwt`, `PrivateKeyJwt` and `SelfSignedTlsClientAuthMethod` authentication methods, and only if a `getClientData` handler was registered on them. It lets you avoid a second client lookup in `getClient` when the authentication method already resolved the client while verifying the request. See [Client Authentication Methods → `getClientData`](./client-auth-methods#getclientdata-handler-1).
 
 ---
 

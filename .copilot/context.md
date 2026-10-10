@@ -36,6 +36,8 @@ docs/
       device-authorization.md
       oidc-support.md
       client-auth-methods.md
+      client-auth-methods/
+        self-signed-tls-client-auth.md
       token-types.md
     oauth2-jwt/                       — @saurbit/oauth2-jwt docs
       index.md
