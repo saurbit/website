@@ -10,10 +10,11 @@ You set the token type on any flow builder using [`setTokenType()`](./builders#c
 | ---------------- | ------------------ | ---------------------------------------------------------------- | -------------------------------------------------------- |
 | `Bearer`         | `BearerTokenType`  | [RFC 6750](https://datatracker.ietf.org/doc/html/rfc6750)       | Standard bearer token — possession alone grants access.  |
 | `DPoP`           | `DPoPTokenType`    | [RFC 9449](https://datatracker.ietf.org/doc/html/rfc9449)       | Proof-of-possession token bound to a client key pair.    |
+| `Bearer` (mTLS)  | `MtlsCertificateBoundTokenType` | [RFC 8705](https://datatracker.ietf.org/doc/html/rfc8705) | Access (and optionally refresh) token bound to the client's TLS certificate. |
 
 ## `TokenType` Interface
 
-Both built-in token types implement the `TokenType` interface. You can provide your own implementation to support additional token schemes.
+All built-in token types implement the `TokenType` interface. You can provide your own implementation to support additional token schemes.
 
 ```ts
 interface TokenType {
@@ -248,6 +249,166 @@ Throws if the response is invalid, if the `ath` claim is missing from the DPoP p
 ```ts
 await dpop.validateAccessTokenHash(tokenTypeValidationResponse, accessToken);
 ```
+
+---
+
+## `MtlsCertificateBoundTokenType` {#mtls}
+
+Implements [certificate-bound access tokens](https://datatracker.ietf.org/doc/html/rfc8705#section-3) (OAuth 2.0 Mutual TLS, RFC 8705). The access token is bound to the client's TLS certificate through the `cnf` claim: it carries the certificate's SHA-256 thumbprint in `cnf["x5t#S256"]`, and is only accepted when the request presents the same certificate. A stolen token is useless without the matching private key.
+
+The token is still sent as a bearer token, so the `Authorization` header prefix is `Bearer`.
+
+Refresh tokens can optionally be bound to the certificate as well, so `refresh_token` grant requests are accepted only from the certificate the refresh token was issued to.
+
+::: info Reverse proxy required
+`@saurbit/oauth2` does not terminate TLS. The reverse proxy in front of your server must forward the client certificate in a request header (by default `x-ssl-client-cert`), and must overwrite that header on every request so it cannot be forged. See [Self-Signed TLS Client Authentication](/packages/oauth2/self-signed-tls-client-auth#proxy-setup).
+:::
+
+### How it works {#mtls-how-it-works}
+
+1. **Issuing:** at the token endpoint, compute the thumbprint of the presented certificate and add it to the access token claims with `applyBinding()` before signing. If the refresh token is bound too, add the same binding to the stored refresh token data.
+2. **Validating on protected resources:** `isValid()` reads the certificate from the header, decodes the token with your `decodeTokenPayload` callback, checks that `cnf["x5t#S256"]` is present, and compares it with the thumbprint of the presented certificate.
+3. **Validating refresh requests:** when `boundRefreshToken` is `true`, `isValidTokenRequest()` does the same check for `refresh_token` grants, using the refresh token.
+
+### Usage
+
+The token type is usually created from [`SelfSignedTlsClientAuthMethod.createCertificateBoundTokenType()`](/packages/oauth2/self-signed-tls-client-auth#create-bound-token-type), which reuses the method's certificate header name. It can also be instantiated directly, for example with another client authentication method:
+
+```ts
+import { AuthorizationCodeFlowBuilder, MtlsCertificateBoundTokenType } from "@saurbit/oauth2";
+
+const mtlsTokenType = new MtlsCertificateBoundTokenType(
+  async (token, isRefreshToken) => {
+    // Return the verified payload, or undefined when invalid
+    if (isRefreshToken) return await getRefreshTokenData(token);
+    return await jwksAuthority.verify(token);
+  },
+  true, // also bind refresh tokens
+  "x-ssl-client-cert",
+);
+
+const flow = new AuthorizationCodeFlowBuilder({ tokenEndpoint: "/token" })
+  .setTokenType(mtlsTokenType)
+  // ... other builder methods
+  .build();
+```
+
+### Constructor
+
+```ts
+new MtlsCertificateBoundTokenType(
+  decodeTokenPayload: MtlsJwtDecode,
+  boundRefreshToken?: boolean,
+  certHeaderName?: string,
+)
+```
+
+| Parameter            | Type             | Default             | Description                                                                                         |
+| -------------------- | ---------------- | ------------------- | --------------------------------------------------------------------------------------------------- |
+| `decodeTokenPayload` | `MtlsJwtDecode`  | —                   | Decodes **and verifies** the token. Called with the access token, or with the refresh token and `isRefreshToken = true`. Returns the payload or `undefined`. |
+| `boundRefreshToken`  | `boolean`        | `false`             | Whether refresh tokens are also bound to the client certificate.                                     |
+| `certHeaderName`     | `string`         | `x-ssl-client-cert` | Header carrying the (URL-encoded) PEM client certificate.                                            |
+
+```ts
+type MtlsJwtPayload = JwtPayload & { cnf?: { "x5t#S256"?: string } };
+
+type MtlsJwtDecode = (
+  token: string,
+  isRefreshToken: boolean,
+) => Promise<MtlsJwtPayload | undefined> | MtlsJwtPayload | undefined;
+```
+
+::: warning
+`decodeTokenPayload` is responsible for verifying the token (signature, expiration, …), not just decoding it. The token type only checks the certificate binding. A bound refresh token's payload must also carry the `cnf` claim: store it with the refresh token using `applyBinding()`.
+:::
+
+### Methods
+
+#### `isValid(request, token)`
+
+```ts
+.isValid(request: Request, token: string): Promise<CertificateBoundValidationResponse>
+```
+
+Validates the access token on a protected resource request. Returns `isValid: false` with a `message` when the token is missing, the certificate header is absent, the payload can't be decoded, the `cnf["x5t#S256"]` claim is missing, or the thumbprint doesn't match the presented certificate.
+
+On success, the response exposes the verified payload and the thumbprint in `data`:
+
+```ts
+interface CertificateBoundValidationResponse extends TokenTypeValidationResponse {
+  data?: {
+    mtlsPayload: JwtPayload;
+    mtlsThumbprint?: string;
+  };
+}
+```
+
+In a flow builder's `verifyToken`, this is the `tokenTypeValidation` argument:
+
+```ts
+.verifyToken(async (request, { tokenTypeValidation }) => {
+  const payload = (tokenTypeValidation as CertificateBoundValidationResponse).data?.mtlsPayload;
+  // ... look up the user, return credentials
+})
+```
+
+#### `isValidTokenRequest(request, ctxt)`
+
+```ts
+.isValidTokenRequest(
+  request: Request,
+  ctxt: { grantType: string; refreshToken?: string },
+): Promise<CertificateBoundValidationResponse>
+```
+
+Validates the token endpoint request. It only checks `refresh_token` grants, and only when `boundRefreshToken` is `true`: the refresh token must be present and bound to the presented certificate. Every other request is considered valid.
+
+#### `applyBinding(claims, pemOrThumbprint)`
+
+```ts
+.applyBinding(claims: JwtPayload, pemOrThumbprint: string): Promise<JwtPayload>
+```
+
+Adds the certificate thumbprint to the `cnf["x5t#S256"]` claim of `claims` and returns it. The second argument is either a PEM certificate (plain or URL-encoded, as forwarded by the proxy) or an already computed thumbprint. Call this when issuing the access token, and when storing a bound refresh token.
+
+```ts
+const { x5tS256 } = await mtlsTokenType.computeThumbprint(clientCertPem);
+
+const claims = await mtlsTokenType.applyBinding(
+  { sub: userId, aud: clientId, exp, iat },
+  x5tS256,
+);
+const { token } = await jwksAuthority.sign(claims);
+
+// Bind the stored refresh token to the same certificate
+await storeRefreshToken(refreshToken, {
+  clientId,
+  userId,
+  ...(await mtlsTokenType.applyBinding({}, x5tS256)),
+});
+```
+
+#### `addThumbprintToCnfClaim(claims, thumbprint)`
+
+```ts
+.addThumbprintToCnfClaim(claims: JwtPayload, thumbprint: string): JwtPayload
+```
+
+Lower-level variant of `applyBinding()` taking a precomputed thumbprint. Throws if `claims` isn't an object or `thumbprint` isn't a non-empty string.
+
+#### Thumbprint helpers
+
+| Method                       | Returns                  | Description                                                                          |
+| ---------------------------- | ------------------------ | ------------------------------------------------------------------------------------ |
+| `computeThumbprint(pem)`     | `Promise<{ x5tS256 }>`   | The base64url SHA-256 thumbprint of the certificate, wrapped in an object.           |
+| `calculateX5tS256(pem)`      | `Promise<string>`        | The RFC 8705 base64url SHA-256 thumbprint of the certificate.                        |
+| `calculateHexThumbprint(pem)` | `Promise<string>`       | The lowercase hexadecimal SHA-256 thumbprint. Not part of the binding process, useful for logging or comparisons. |
+
+All helpers accept a plain or URL-encoded PEM certificate.
+
+### Complete example
+
+See [Self-Signed TLS Client Authentication](/packages/oauth2/self-signed-tls-client-auth#server-example) for a complete authorization server using this token type, and its [Docker Compose example](/packages/oauth2/self-signed-tls-client-auth#docker-example).
 
 ---
 

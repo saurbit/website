@@ -263,10 +263,10 @@ const flow = new OIDCAuthorizationCodeFlowBuilder<LoginFormData>({
     refreshToken: crypto.randomUUID(),
     scope: ["openid", "profile"],
   }))
-  .verifyToken(async (token) => {
+  .verifyToken(async (_request, { token }) => {
     const payload = await verifyJwt(token);
     if (!payload) return { isValid: false };
-    return { isValid: true, credentials: { user: payload.sub, scope: payload.scope } };
+    return { isValid: true, credentials: { user: { id: payload.sub }, scope: payload.scope } };
   })
   .build();
 ```
@@ -317,7 +317,7 @@ const flow = new OIDCClientCredentialsFlowBuilder({ tokenEndpoint: "/token" })
   .generateAccessToken(async (context) => ({
     accessToken: await signJwt({ sub: context.client.id, scope: context.scope }),
   }))
-  .verifyToken(async (token) => {
+  .verifyToken(async (_request, { token }) => {
     const payload = await verifyJwt(token);
     if (!payload) return { isValid: false };
     return { isValid: true, credentials: { app: { id: payload.sub }, scope: payload.scope } };
@@ -437,10 +437,10 @@ const flow = new OIDCDeviceAuthorizationFlowBuilder({ tokenEndpoint: "/token" })
       scope: ["openid", "profile"],
     };
   })
-  .verifyToken(async (token) => {
+  .verifyToken(async (_request, { token }) => {
     const payload = await verifyJwt(token);
     if (!payload) return { isValid: false };
-    return { isValid: true, credentials: { user: payload.sub, scope: payload.scope } };
+    return { isValid: true, credentials: { user: { id: payload.sub }, scope: payload.scope } };
   })
   .build();
 ```

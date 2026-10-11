@@ -40,7 +40,7 @@ const flow = new DeviceAuthorizationFlowBuilder({ tokenEndpoint: "/token" })
     if (status === "pending") return { type: "error", error: "authorization_pending" };
     return { accessToken: await issueToken(context) };
   })
-  .verifyToken(async (token) => {
+  .verifyToken(async (_request, { token }) => {
     return await verifyAccessToken(token);
   })
   .build();
@@ -547,7 +547,7 @@ const flow = new DeviceAuthorizationFlowBuilder({ tokenEndpoint: "/oauth2/token"
   }))
 
   // Strategy middleware: verify tokens on protected routes
-  .verifyToken(async (token) => {
+  .verifyToken(async (_request, { token }) => {
     const payload = await verifyJwt(token);
     if (!payload) return { isValid: false };
     const user = await db.findUserById(payload.sub);

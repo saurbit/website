@@ -121,11 +121,58 @@ Every token request object passed to a flow's `getClient` handler (for both the 
 
 ```ts
 .verifyToken(
-  handler: (token: string) => Promise<StrategyResult> | StrategyResult
+  handler: StrategyVerifyTokenFunction<Request>
 ): this
 ```
 
-Sets the token verification function used by the strategy middleware to validate access tokens on protected routes.
+Sets the token verification function used by the strategy to validate access tokens on protected routes. It is called by [`flow.verifyToken(request)`](#flow-verify-token) after the token has been extracted from the `Authorization` header and checked by the configured [token type](./token-types).
+
+The handler signature:
+
+```ts
+(
+  request: Request,
+  tokens: {
+    token: string;
+    tokenTypeValidation: TokenTypeValidationResponse;
+  },
+) => Promise<VerifyTokenResult> | VerifyTokenResult
+
+type VerifyTokenResult = {
+  isValid?: boolean;
+  credentials?: AuthCredentials;
+  message?: string;
+};
+```
+
+| Parameter                     | Type                          | Description                                                                                                                  |
+| ----------------------------- | ----------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| `request`                     | `Request`                     | The incoming request.                                                              |
+| `tokens.token`                | `string`                      | The raw access token from the `Authorization` header, without the token type prefix.                                          |
+| `tokens.tokenTypeValidation`  | `TokenTypeValidationResponse` | The result of the token type validation (e.g. the verified payload and thumbprint for [mTLS](./token-types#mtls) tokens, or the DPoP proof for [DPoP](./token-types#dpop)). |
+
+The handler returns:
+
+| Field         | Type                | Description                                                                          |
+| ------------- | ------------------- | ------------------------------------------------------------------------------------ |
+| `isValid`     | `boolean` | Whether the token is considered valid.                                            |
+| `credentials` | `AuthCredentials`   | The resolved credentials (`scope`, `user`, `app`) exposed on success.                |
+| `message`     | `string`            | An optional message included in the error on failure.                                |
+
+```ts
+.verifyToken(async (request, { token, tokenTypeValidation }) => {
+  const payload = await jwksAuthority.verify(token);
+  if (!payload) return { isValid: false, message: "Invalid token" };
+
+  return {
+    isValid: true,
+    credentials: {
+      scope: String(payload.scope ?? "").split(" "),
+      user: { id: payload.sub },
+    },
+  };
+})
+```
 
 ---
 

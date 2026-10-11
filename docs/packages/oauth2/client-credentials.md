@@ -28,7 +28,7 @@ const flow = new ClientCredentialsFlowBuilder({ tokenEndpoint: "/token" })
       accessToken: await issueToken(context),
     };
   })
-  .verifyToken(async (token) => {
+  .verifyToken(async (_request, { token }) => {
     return await verifyAccessToken(token);
   })
   .build();
@@ -218,7 +218,7 @@ const flow = new ClientCredentialsFlowBuilder({ tokenEndpoint: "/token" })
   }))
 
   // Strategy middleware: verify tokens on protected routes
-  .verifyToken(async (token) => {
+  .verifyToken(async (_request, { token }) => {
     const payload = await verifyJwt(token);
     if (!payload) return { isValid: false };
     return { 

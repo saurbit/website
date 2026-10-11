@@ -42,7 +42,7 @@ const flow = new AuthorizationCodeFlowBuilder({ tokenEndpoint: "/token" })
       scope: context.client.scopes,
     };
   })
-  .verifyToken(async (token) => {
+  .verifyToken(async (_request, { token }) => {
     return await verifyAccessToken(token);
   })
   .build();
@@ -496,7 +496,7 @@ const flow = new AuthorizationCodeFlowBuilder<LoginFormData>({
   }))
 
   // Strategy middleware: verify tokens on protected routes
-  .verifyToken(async (token) => {
+  .verifyToken(async (_request, { token }) => {
     const payload = await verifyJwt(token);
     if (!payload) return { isValid: false };
     const user = await db.findUserById(payload.sub);
