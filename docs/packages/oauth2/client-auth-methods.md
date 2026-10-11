@@ -13,7 +13,7 @@ You register methods on any flow builder using `addClientAuthenticationMethod()`
 | `none`                | `NoneAuthMethod`     | No              | Public clients — client ID only, no secret.                  |
 | `client_secret_jwt`   | `ClientSecretJwt`    | Yes             | JWT assertion signed with a shared secret (HMAC).            |
 | `private_key_jwt`     | `PrivateKeyJwt`      | Yes             | JWT assertion signed with the client's private key (asymmetric). |
-| [`self_signed_tls_client_auth`](./client-auth-methods/self-signed-tls-client-auth) | `SelfSignedTlsClientAuthMethod` | Yes             | Client authenticates using a self-signed TLS certificate (mTLS). |
+| [`self_signed_tls_client_auth`](./self-signed-tls-client-auth) | `SelfSignedTlsClientAuthMethod` | Yes             | Client authenticates using a self-signed TLS certificate (mTLS). |
 | `tls_client_auth` | `TlsClientAuth` | Yes             | Client authenticates using a TLS client certificate.         |
 
 ---
@@ -352,7 +352,7 @@ const flow = new AuthorizationCodeFlowBuilder({ tokenEndpoint: "/token" })
   .build();
 ```
 
-See [Self-Signed TLS Client Authentication](./client-auth-methods/self-signed-tls-client-auth) for the full documentation: proxy setup, certificate-bound tokens, and a complete Docker Compose example.
+See [Self-Signed TLS Client Authentication](./self-signed-tls-client-auth) for the full documentation: proxy setup, certificate-bound tokens, and a complete Docker Compose example.
 
 
 

@@ -48,6 +48,7 @@ export default defineConfig({
                   { text: 'OIDC Support', link: '/packages/oauth2/oidc-support' },
                   { text: 'Client Authentication Methods', link: '/packages/oauth2/client-auth-methods' },
                   { text: 'Token Types', link: '/packages/oauth2/token-types' },
+                  { text: 'Self-Signed TLS Client Authentication', link: '/packages/oauth2/self-signed-tls-client-auth' },
                 ]
               },
               {
